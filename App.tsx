@@ -37,8 +37,6 @@ const App = () => {
     'Sprite 6': { x: 0, y: 0, rotation: 0 },
   });
 
-
-
   const stripes: Sprite[] = [
     { name: 'Sprite 1', image: require('./assets/sprite1.png') },
     { name: 'Sprite 2', image: require('./assets/sprite2.png') },
@@ -59,39 +57,39 @@ const App = () => {
   const callHeroFeature = () => {
     // Reset the state
     handleReset();
-
+  
     // Select Sprite 1 and Sprite 2
     const sprite1 = stripes.find(sprite => sprite.name === 'Sprite 1');
     const sprite2 = stripes.find(sprite => sprite.name === 'Sprite 2');
-
+  
     if (sprite1 && sprite2) {
       addStripe(sprite1, 50, 200); // Start position for Sprite 1
-      addStripe(sprite2, 100, 200); // Start position for Sprite 2
+      addStripe(sprite2, 250, 200); // Start position for Sprite 2
       setSelectedSprite(sprite1);
     }
-
+  
     // Start animation
     animateSprites();
   };
-
+  
   const animateSprites = () => {
-    const duration = 10000; // 5 seconds
-    const steps = 100; // Number of steps in the animation
+    const duration = 10000; // 5 seconds (reduced as we are now moving by 10 steps)
+    const steps = 90; // Number of steps in the animation (adjust as needed)
     const sprite1Name = 'Sprite 1';
     const sprite2Name = 'Sprite 2';
-
+  
     let step = 0;
-
+  
     const animationInterval = setInterval(() => {
-      step += 1;
-
+      step += 10;
+  
       // Move Sprite 1 +10 and Sprite 2 -10
       setSpriteActions(prev => ({
         ...prev,
-        [sprite1Name]: { x: (prev[sprite1Name]?.x || 0) + 10 * (1 / steps), y: prev[sprite1Name]?.y || 0 },
-        [sprite2Name]: { x: (prev[sprite2Name]?.x || 0) - 10 * (1 / steps), y: prev[sprite2Name]?.y || 0 },
+        [sprite1Name]: { x: (prev[sprite1Name]?.x || 0) + 10, y: prev[sprite1Name]?.y || 0 },
+        [sprite2Name]: { x: (prev[sprite2Name]?.x || 0) - 10, y: prev[sprite2Name]?.y || 0 },
       }));
-
+  
       // Check for collision (when their positions overlap)
       if (step >= steps) {
         clearInterval(animationInterval);
@@ -100,81 +98,82 @@ const App = () => {
       }
     }, duration / steps);
   };
-
+  
   const swapAnimations = () => {
     const sprite1Name = 'Sprite 1';
     const sprite2Name = 'Sprite 2';
     let step = 0;
-
-    const duration = 10000; // 5 seconds
-    const steps = 100; // Number of steps in the animation
-
+  
+    const duration = 10000; // 5 seconds (same duration as above)
+    const steps = 90; // Number of steps in the animation (adjust as needed)
+  
     const animationInterval = setInterval(() => {
-      step += 1;
-
+      step += 10;
+  
       // Move Sprite 1 -10 and Sprite 2 +10
       setSpriteActions(prev => ({
         ...prev,
-        [sprite1Name]: { x: (prev[sprite1Name]?.x || 0) - 10 * (1 / steps), y: prev[sprite1Name]?.y || 0 },
-        [sprite2Name]: { x: (prev[sprite2Name]?.x || 0) + 10 * (1 / steps), y: prev[sprite2Name]?.y || 0 },
+        [sprite1Name]: { x: (prev[sprite1Name]?.x || 0) - 10, y: prev[sprite1Name]?.y || 0 },
+        [sprite2Name]: { x: (prev[sprite2Name]?.x || 0) + 10, y: prev[sprite2Name]?.y || 0 },
       }));
-
+  
       if (step >= steps) {
         clearInterval(animationInterval);
       }
     }, duration / steps);
   };
+  
 
   const handlePlay = () => {
-    if (!selectedSprite) {
-      Alert.alert('Select a sprite to play!');
+    if (addedStripes.length === 0) {
+      Alert.alert('No sprites on the playground!');
       return;
     }
 
-    const actions = blocksInAction[selectedSprite.name] || [];
-    let x = spriteActions[selectedSprite.name]?.x || 0;
-    let y = spriteActions[selectedSprite.name]?.y || 0;
-    let rotation = spriteTransforms[selectedSprite.name]?.rotation || 0;
+    addedStripes.forEach(sprite => {
+      const actions = blocksInAction[sprite.name] || [];
+      let x = spriteActions[sprite.name]?.x || 0;
+      let y = spriteActions[sprite.name]?.y || 0;
+      let rotation = spriteTransforms[sprite.name]?.rotation || 0;
 
-    actions.forEach(action => {
-      if (action === 'Move X by 10') {
-        x += 10;
-      } else if (action === 'Move Y by 10') {
-        y += 10;
-      } else if (action === 'Rotate 180 degrees') {
-        rotation += 180;
-      } else if (action === 'Goto (0,0)') {
-        x = 0;
-        y = 0;
-      } else if (action === 'Move X=50, Y=50') {
-        x += 50;
-        y += 50;
-      }
+      actions.forEach(action => {
+        if (action === 'Move X by 10') {
+          x += 10;
+        } else if (action === 'Move Y by 10') {
+          y += 10;
+        } else if (action === 'Rotate 180 degrees') {
+          rotation += 180;
+        } else if (action === 'Goto (0,0)') {
+          x = 0;
+          y = 0;
+        } else if (action === 'Move X=50, Y=50') {
+          x += 50;
+          y += 50;
+        }
+      });
+
+      // Update sprite position and rotation for each sprite
+      setSpriteActions(prev => ({
+        ...prev,
+        [sprite.name]: { x, y },
+      }));
+
+      setSpriteTransforms(prev => ({
+        ...prev,
+        [sprite.name]: {
+          x: x,
+          y: y,
+          rotation: rotation,
+        },
+      }));
     });
-
-    // Update sprite position
-    setSpriteActions(prev => ({
-      ...prev,
-      [selectedSprite.name]: { x, y },
-    }));
-
-    setSpriteTransforms(prev => ({
-      ...prev,
-      [selectedSprite.name]: {
-        x: x, 
-        y: y, 
-        rotation: rotation,
-      },
-    }));
   };
-
-  
 
   const handleReset = () => {
     setSpriteActions({});
     setBlocksInAction({});
     setSelectedSprite(null);
-    setAddedStripes([]); // Reset added stripes as well
+    setAddedStripes([]); // Reset added sprites as well
   };
 
   const handleSpriteSelect = (stripe: Sprite) => {
@@ -206,7 +205,7 @@ const App = () => {
     }));
   };
 
-  const addStripe = (stripe: Sprite, initialX: number, initialY: number) => {
+  const addStripe = (stripe: Sprite, initialX: number = 0, initialY: number = 0) => {
     setSpriteActions(prev => ({
       ...prev,
       [stripe.name]: { x: initialX, y: initialY },
@@ -238,7 +237,6 @@ const App = () => {
       },
     });
   };
-
 
   return (
     <View style={styles.container}>
